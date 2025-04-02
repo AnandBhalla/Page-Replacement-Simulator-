@@ -1,36 +1,24 @@
 import React, { useState } from "react";
 import "../styles/MemorySimulation.css";
 
-const MemorySimulation = () => {
+const PageReplacementSimulation = () => {
   const [formData, setFormData] = useState({
-    total_virtual_pages: 100,
-    total_physical_frames: 10,
-    page_size: 4096,
-    page_table_type: "single",
-    tlb_size: 5,
-    replacement_algo: "fifo",
-    total_access_requests: 1000,
-    memory_requests: ""
+    frames: 3,
+    algorithm: "fifo",
+    requests: "1,2,3,4,1,2,5,1,2,3,4,5"
   });
 
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [useCustomRequests, setUseCustomRequests] = useState(false);
-
-  const pageTableTypes = [
-    { value: "single", label: "Single Level" },
-    { value: "multi", label: "Multi Level" },
-    { value: "inverted", label: "Inverted" },
-    { value: "all", label: "All" }
-  ];
 
   const replacementAlgos = [
     { value: "fifo", label: "FIFO" },
     { value: "lru", label: "LRU" },
-    { value: "lfu", label: "LFU" },
     { value: "optimal", label: "Optimal" },
-    { value: "all", label: "All" }
+    { value: "lfu", label: "LFU" },
+    { value: "mru", label: "MRU" },
+    { value: "mfu", label: "MFU" }
   ];
 
   const handleInputChange = (e) => {
@@ -41,11 +29,7 @@ const MemorySimulation = () => {
     }));
   };
 
-  const handleCheckboxChange = () => {
-    setUseCustomRequests(!useCustomRequests);
-  };
-
-  const validateMemoryRequests = (input) => {
+  const validateRequests = (input) => {
     if (!input) return false;
     return input.split(',').every(item => !isNaN(parseInt(item.trim())));
   };
@@ -56,26 +40,18 @@ const MemorySimulation = () => {
     setLoading(true);
     
     try {
-      // Validate inputs
-      if (useCustomRequests && !validateMemoryRequests(formData.memory_requests)) {
-        throw new Error('Please enter valid comma-separated numbers for memory requests');
+      if (!validateRequests(formData.requests)) {
+        throw new Error('Please enter valid comma-separated numbers for page requests');
       }
 
-      // Prepare request data
+      // Convert requests string to array of numbers
+      const requestsArray = formData.requests.split(',').map(num => parseInt(num.trim()));
+
       const requestData = {
-        total_virtual_pages: parseInt(formData.total_virtual_pages),
-        total_physical_frames: parseInt(formData.total_physical_frames),
-        tlb_size: parseInt(formData.tlb_size),
-        page_table_type: formData.page_table_type,
-        replacement_algo: formData.replacement_algo,
+        requests: requestsArray,
+        frames: parseInt(formData.frames),
+        algorithm: formData.algorithm
       };
-
-      // Add either memory_requests or total_access_requests
-      if (useCustomRequests) {
-        requestData.memory_requests = formData.memory_requests;
-      } else {
-        requestData.total_access_requests = parseInt(formData.total_access_requests);
-      }
 
       const response = await fetch('http://localhost:8000/simulate', {
         method: 'POST',
@@ -87,7 +63,7 @@ const MemorySimulation = () => {
       
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.detail || 'Network response was not ok');
+        throw new Error(errorData.error || 'Network response was not ok');
       }
       
       const data = await response.json();
@@ -101,7 +77,6 @@ const MemorySimulation = () => {
     }
   };
 
-  // Helper function to format display keys
   const formatKey = (key) => {
     return key.split('_').map(word => 
       word.charAt(0).toUpperCase() + word.slice(1)
@@ -110,15 +85,30 @@ const MemorySimulation = () => {
 
   return (
     <div className="memory-simulation-container">
+      <h1>Page Replacement Algorithm Simulator</h1>
+      
       <form className="simulation-form" onSubmit={handleSubmit}>
         <div className="form-grid">
           <div className="input-group">
-            <label htmlFor="total_virtual_pages">Total Virtual Pages</label>
+            <label htmlFor="requests">Page Requests (comma-separated)</label>
+            <input
+              type="text"
+              id="requests"
+              name="requests"
+              value={formData.requests}
+              onChange={handleInputChange}
+              placeholder="e.g., 1,2,3,4,1,2,5"
+              required
+            />
+          </div>
+
+          <div className="input-group">
+            <label htmlFor="frames">Number of Frames</label>
             <input
               type="number"
-              id="total_virtual_pages"
-              name="total_virtual_pages"
-              value={formData.total_virtual_pages}
+              id="frames"
+              name="frames"
+              value={formData.frames}
               onChange={handleInputChange}
               required
               min="1"
@@ -126,66 +116,11 @@ const MemorySimulation = () => {
           </div>
 
           <div className="input-group">
-            <label htmlFor="total_physical_frames">Total Physical Frames</label>
-            <input
-              type="number"
-              id="total_physical_frames"
-              name="total_physical_frames"
-              value={formData.total_physical_frames}
-              onChange={handleInputChange}
-              required
-              min="1"
-            />
-          </div>
-
-          <div className="input-group">
-            <label htmlFor="page_size">Page Size (Bytes)</label>
-            <input
-              type="number"
-              id="page_size"
-              name="page_size"
-              value={formData.page_size}
-              onChange={handleInputChange}
-              required
-              min="1"
-            />
-          </div>
-
-          <div className="input-group">
-            <label htmlFor="page_table_type">Page Table Type</label>
+            <label htmlFor="algorithm">Replacement Algorithm</label>
             <select
-              id="page_table_type"
-              name="page_table_type"
-              value={formData.page_table_type}
-              onChange={handleInputChange}
-            >
-              {pageTableTypes.map((type) => (
-                <option key={type.value} value={type.value}>
-                  {type.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="input-group">
-            <label htmlFor="tlb_size">TLB Size</label>
-            <input
-              type="number"
-              id="tlb_size"
-              name="tlb_size"
-              value={formData.tlb_size}
-              onChange={handleInputChange}
-              required
-              min="1"
-            />
-          </div>
-
-          <div className="input-group">
-            <label htmlFor="replacement_algo">Page Replacement Algorithm</label>
-            <select
-              id="replacement_algo"
-              name="replacement_algo"
-              value={formData.replacement_algo}
+              id="algorithm"
+              name="algorithm"
+              value={formData.algorithm}
               onChange={handleInputChange}
             >
               {replacementAlgos.map((algo) => (
@@ -195,45 +130,6 @@ const MemorySimulation = () => {
               ))}
             </select>
           </div>
-
-          <div className="input-group checkbox-group">
-            <label>
-              <input
-                type="checkbox"
-                checked={useCustomRequests}
-                onChange={handleCheckboxChange}
-              />
-              Use custom memory requests
-            </label>
-          </div>
-
-          {useCustomRequests ? (
-            <div className="input-group full-width">
-              <label htmlFor="memory_requests">Memory Requests (comma-separated)</label>
-              <input
-                type="text"
-                id="memory_requests"
-                name="memory_requests"
-                value={formData.memory_requests}
-                onChange={handleInputChange}
-                placeholder="e.g., 1,2,3,4,5,2,3,1,5"
-                required={useCustomRequests}
-              />
-            </div>
-          ) : (
-            <div className="input-group">
-              <label htmlFor="total_access_requests">Total Memory Access Requests</label>
-              <input
-                type="number"
-                id="total_access_requests"
-                name="total_access_requests"
-                value={formData.total_access_requests}
-                onChange={handleInputChange}
-                required={!useCustomRequests}
-                min="1"
-              />
-            </div>
-          )}
         </div>
 
         <div className="button-container">
@@ -256,21 +152,34 @@ const MemorySimulation = () => {
           <div className="results-grid">
             {results.map((result, index) => (
               <div key={index} className="result-card">
-                <h3>{result.paging_type} PAGING WITH {result.algorithm}</h3>
+                <h3>{result.paging_type} Paging - {result.algorithm}</h3>
                 <div className="result-stats">
-                  {Object.entries(result).map(([key, value]) => {
-                    if (key === 'paging_type' || key === 'algorithm') return null;
-                    return (
-                      <div className="stat" key={key}>
-                        <span className="stat-label">{formatKey(key)}:</span>
-                        <span className="stat-value">
-                          {typeof value === 'number' ? 
-                            Number.isInteger(value) ? value : value.toFixed(2) 
-                            : value}
-                        </span>
-                      </div>
-                    );
-                  })}
+                  <div className="stat">
+                    <span className="stat-label">Total Page Faults:</span>
+                    <span className="stat-value">{result.total_page_faults}</span>
+                  </div>
+                  <div className="stat">
+                    <span className="stat-label">Total Hits:</span>
+                    <span className="stat-value">{result.total_hits}</span>
+                  </div>
+                  <div className="stat">
+                    <span className="stat-label">Total Requests:</span>
+                    <span className="stat-value">
+                      {result.total_page_faults + result.total_hits}
+                    </span>
+                  </div>
+                  <div className="stat">
+                    <span className="stat-label">Fault Ratio:</span>
+                    <span className="stat-value">
+                      {(result.total_page_faults / (result.total_page_faults + result.total_hits)).toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="stat">
+                    <span className="stat-label">Hit Ratio:</span>
+                    <span className="stat-value">
+                      {(result.total_hits / (result.total_page_faults + result.total_hits)).toFixed(2)}
+                    </span>
+                  </div>
                 </div>
               </div>
             ))}
@@ -283,4 +192,4 @@ const MemorySimulation = () => {
   );
 };
 
-export default MemorySimulation;
+export default PageReplacementSimulation;
