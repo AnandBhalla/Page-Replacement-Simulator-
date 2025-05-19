@@ -41,9 +41,15 @@ Returns step-by-step memory state updates
 
 📸 Demo Screenshots
 
-![Screenshot 2025-03-28 162032](https://github.com/user-attachments/assets/7c10d310-0add-4d45-af46-275bb5e1155e)
-![Screenshot 2025-04-03 192201](https://github.com/user-attachments/assets/9bc9e091-59c5-433a-89c1-3fca9ff88fa2)
-![Screenshot 2025-03-28 150637](https://github.com/user-attachments/assets/b99177a0-0c3d-4563-a80d-266bbdcf773a)
+
+![Screenshot 2025-05-19 210021](https://github.com/user-attachments/assets/35e9a320-6597-4e05-8467-6ce858c2ae99)
+![Screenshot 2025-05-19 210101](https://github.com/user-attachments/assets/19cbd051-4cf6-4b7e-8b8d-ba68d11147f8)
+![Screenshot 2025-05-19 210121](https://github.com/user-attachments/assets/cf1b99c8-ad3c-4e8c-9b7c-d683e7ca1c05)
+![Screenshot 2025-05-19 210131](https://github.com/user-attachments/assets/8fec0aca-79e3-4355-84b3-205dfbe1f817)
+![Screenshot 2025-05-19 210155](https://github.com/user-attachments/assets/91a742a2-b873-436d-b4bf-ded6dc5fa1ec)
+![Screenshot 2025-05-19 210215](https://github.com/user-attachments/assets/b90c32f0-4864-4dbd-bd69-dd9c7691aa75)
+![Screenshot 2025-05-19 210227](https://github.com/user-attachments/assets/e597e8be-b89f-45dd-93fe-3acf12a2667b)
+
 
 🧠 Algorithms Included
 
@@ -61,7 +67,6 @@ Optimal Page Replacement (OPT)
 
 📝 Todo
 Export results to CSV
-
 Implement different types of Page Tables
 
 Add animations or step-by-step simulation controls
