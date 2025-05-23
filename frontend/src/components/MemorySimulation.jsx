@@ -2,6 +2,9 @@ import React, { useState } from "react";
 import "../styles/MemorySimulation.css";
 
 const PageReplacementSimulation = () => {
+
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
+
   const [formData, setFormData] = useState({
     frames: 3,
     algorithm: "fifo",
@@ -58,7 +61,7 @@ const PageReplacementSimulation = () => {
         algorithm: formData.algorithm
       };
 
-      const response = await fetch('http://localhost:8000/simulate', {
+      const response = await fetch(`${backendUrl}/simulate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
